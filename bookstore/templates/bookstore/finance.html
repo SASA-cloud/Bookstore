@@ -1,0 +1,157 @@
+{% extends "bookstore/base.html" %}
+
+{#管理应用导航条#}
+          {% block manageNav %}
+        <li><a href="{% url 'index' %}">图书信息页面</a></li>
+        <li ><a href="{% url 'inventory' %}">库存管理页面</a></li>
+        <li><a href="{% url 'subscribe' %}">采编管理页面</a></li>
+        <li><a href="{% url 'purchase' %}">进货管理页面</a></li>
+        <li  class="active"><a href="{% url 'finance' %}">财务管理页面</a></li>
+        <li  ><a href="{% url 'user' %}">用户管理页面</a></li>
+          {% endblock %}
+
+
+
+{###########################查询##############################}
+{% block searchInput %}
+        <div >
+<form id="searchBookForm" class="form-inline" method = "POST"  action="{% url 'finance' %}">
+{% csrf_token %}
+  <select name = "status" id="status" class="form-control">
+  <option value="全部流水" >全部流水</option>
+  <option value="待付款">待付款</option>
+  <option value="已取消">已取消</option>
+  <option value="已支付">已支付</option>
+  </select>
+  <button type="submit" class="btn btn-default" >查询</button>
+</form>
+        </div>
+{% endblock %}
+{###########################查询##############################}
+
+{###########################列表##############################}
+{% block tableInfo %}
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover">
+    <thead>
+    <th></th>
+    <th>账目编号</th>
+    <th>生成时间</th>
+    <th>结束时间</th>
+    <th>类别</th>
+    <th>金额</th>
+    <th>缘由</th>
+    <th>操作者</th>
+    <th>状态</th>
+    <th>操作</th>
+    </thead>
+    <tbody>
+    {% if queryList %}
+        {% for row in queryList %}
+            <tr>
+                <td> </td>
+                <td class="account_id">{{ row.account_id }}</td>
+                <td class="create_time">{{ row.create_time }}</td>
+                <td class="stop_time">{{ row.stop_time }}</td>
+                <td class="account_class">{{ row.account_class }}</td>
+                <td class="amount">{{ row.amount }}</td>
+                <td class="account_reason">{{ row.account_reason }}</td>
+                <td class="operator">{{ row.operator }}</td>
+                <td class="bill_status">{{ row.bill_status }}</td>
+                <td class="operate">
+{#                    应该有不同状态不同操作的区别#}
+                    {% if row.bill_status == '待付款' %}
+                    <a href="#" onclick="pay_bill(this)">支付</a>
+                    <a href="#" onclick="cancel_bill(this)">取消</a>
+                    <a href="#" onclick="receive_money(this)">收款</a>
+                    {% endif %}
+
+                </td>
+            </tr>
+
+        {% endfor %}
+    {% endif %}
+    </tbody>
+    </table>
+</div>
+
+{% endblock %}
+{###########################列表##############################}
+
+{############################控制操作#########################}
+{% block controlBtn %}
+
+{% endblock %}
+{############################控制操作#########################}
+
+{############################脚本#########################}
+{% block js %}
+    <script>
+
+    //支付订单
+    function pay_bill(obj){
+        ret = confirm("确定支付订单吗？");
+        if(ret){  //确定
+            row = $(obj).parent().parent(); // 操作的行
+            $.ajax({
+             url: "{% url 'payBill' %}",
+             type: "POST",
+             data: {
+                 "account_id":$(row).children('.account_id').text(),
+             },
+             success: function (backData) {
+                 if(backData.status==="0")//减少成功
+                 alert("支付成功!");
+                 else if(backData.status==="1")// 减少失败
+                 alert("支付失败!");
+             }
+         })
+        }
+    }
+
+
+    //取消订单
+    function cancel_bill(obj){
+        ret = confirm("确定取消订单吗？");
+        if(ret){  //确定
+            row = $(obj).parent().parent(); // 操作的行
+            $.ajax({
+             url: "{% url 'cancelBill' %}",
+             type: "POST",
+             data: {
+                 "account_id":$(row).children('.account_id').text(),
+             },
+             success: function (backData) {
+                 if(backData.status==="0")//减少成功
+                 alert("取消成功!");
+                 else if(backData.status==="1")// 减少失败
+                 alert("取消失败!");
+             }
+         })
+        }
+    }
+
+    //确认收款
+    function receive_money(obj){
+        ret = confirm("确定确认收款吗？");
+        if(ret){  //确定
+            row = $(obj).parent().parent(); // 操作的行
+            $.ajax({
+             url: "{% url 'receiveMoney' %}",
+             type: "POST",
+             data: {
+                 "account_id":$(row).children('.account_id').text(),
+             },
+             success: function (backData) {
+                 if(backData.status==="0")//减少成功
+                 alert("确认成功!");
+                 else if(backData.status==="1")// 减少失败
+                 alert("确认失败!");
+             }
+         })
+        }
+    }
+</script>
+
+{% endblock %}
+{############################脚本#########################}

@@ -1,0 +1,64 @@
+{% extends "bookstore/base.html" %}
+
+{#管理应用导航条#}
+          {% block manageNav %}
+            <li><a href="{% url 'manageLog' %}">管理员登录页面</a></li>
+          {% endblock %}
+
+
+{#登录框#}
+{% block searchInput %}
+
+{#登录失败消息#}
+{% if message %}
+    <div class="alert">
+    {{ message }}
+    </div>
+{% endif %}
+<div id = "login_window" class = "row">
+    <div class="col-md-4"></div>
+<form id = "loginForm" method="post" class="form-signin col-md-4" action="{% url 'manageLogSubmit' %}">
+    {% csrf_token %}
+        <h2 class="form-signin-heading">登录</h2>
+        <label for="inputEmail" class="sr-only">管理员ID</label>
+        <input name="manage_id" id="inputEmail" class="form-control" placeholder="管理员ID" required autofocus>
+    <br>
+        <label for="inputPassword" class="sr-only">密码</label>
+        <input name="manage_secret" type="password" id="inputPassword" class="form-control" placeholder="密码" required>
+    <br>
+        <div class="row">
+        <button class="btn btn-lg btn-primary btn-block" type="submit" >登录</button>
+        </div>
+
+      </form>
+
+        <div class="col-md-4"></div>
+</div>
+
+
+
+{% endblock %}
+
+{#脚本#}
+{% block js %}
+<script>
+{#登录#}
+    function login(){
+        loginForm = document.getElementById("loginForm");
+        var formData = new FormData(loginForm);
+         $.ajax({
+             url: "{% url 'manageLogSubmit' %}",
+             type: "POST",
+             data: formData,
+             processData: false,
+             contentType: false,
+             success: function (backData) {
+                 if(backData.status==="1")// 登录失败
+                 alert("用户名或密码错误!");
+             }
+         })
+    }
+
+</script>
+
+{% endblock %}

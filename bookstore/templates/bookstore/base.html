@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>图书馆管理员系统</title>
+    {% load bootstrap3 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    {% load static %}
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="{% static 'js/index.js' %}"></script>
+
+</head>
+<body>
+<div id="navbar">
+
+    <nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header" >
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">图书管理系统</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+{#管理应用导航条#}
+          {% block manageNav %}
+
+          {% endblock %}
+      </ul>
+
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#">{{ request.session.manage_name }} 您好！</a></li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+</div>
+
+
+<div class = "container" >
+
+{###########################查询##############################}
+<div id = "searchInput" class = "row">
+{% block searchInput %}
+
+{% endblock %}
+</div>
+{###########################查询##############################}
+
+<br>
+
+{###########################列表##############################}
+<div id="tableInfo" class = "row" >
+{% block tableInfo %}
+
+{% endblock %}
+</div>
+{###########################列表##############################}
+
+{############################控制操作#########################}
+<div id="controlBtn" class = "row" >
+{% block controlBtn %}
+
+{% endblock %}
+</div>
+{############################控制操作#########################}
+
+{############################模态框#########################}
+{% block modal %}
+{% endblock %}
+{############################模态框#########################}
+
+</div>
+
+</body>
+
+{############################脚本#########################}
+{% block js %}
+
+{% endblock %}
+{############################脚本#########################}
+</html>

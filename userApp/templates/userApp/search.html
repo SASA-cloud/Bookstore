@@ -1,0 +1,112 @@
+{% extends "userApp/base.html" %}
+
+{#导航条#}
+{% block nav %}
+<li  ><a href="{% url 'selfInfo' %}">个人信息</a></li>
+<li ><a href="{% url 'circulate' %}">我的流通</a></li>
+<li class="active"><a href="{% url 'readerSearch' %}">检索</a></li>
+{% endblock %}
+
+{% block mainbody %}
+<h1 class="page-header">图书检索</h1>
+
+{#检索图书#}
+<div class="row">
+<form id="searchBookForm" class="form-inline" method = "POST"  action="{% url 'readerSearch' %}">
+{% csrf_token %}
+  <div class="form-group">
+    <label for="exampleInputEmail2">书名</label>
+    <input name="book_name" type="text"  class="form-control" id="exampleInputEmail2" placeholder="输入书名...">
+  </div>
+
+  <div class="form-group">
+    <label for="exampleInputName2">作者</label>
+    <input name = "author" type="text" class="form-control" id="exampleInputName2" placeholder="输入作者...">
+  </div>
+
+  <div class="form-group">
+    <label for="exampleInputName2">ISBN</label>
+    <input name = "ISBN" type="text" class="form-control" id="exampleInputName2" placeholder="输入ISBN...">
+  </div>
+
+  <button type="submit" class="btn btn-default" >查询</button>
+</form>
+</div>
+
+
+
+
+<br>
+
+
+{#图书列表#}
+<div class="row">
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover">
+    <thead>
+    <th></th>
+    <th>图书ID</th>
+    <th>ISBN</th>
+    <th>图书名称</th>
+    <th>出版社</th>
+    <th>作者</th>
+    <th>出版日期</th>
+    <th>电子链接</th>
+    <th>图书评级</th>
+    <th>图书类别</th>
+    <th>馆藏位置</th>
+    <th>库存量</th>
+    <th>操作</th>
+    </thead>
+    <tbody>
+    {% if queryList %}
+        {% for row in queryList %}
+            <tr>
+                <td> </td>
+                <td class="book_id">{{ row.book_id }}</td>
+                <td class="ISBN">{{ row.ISBN }}</td>
+                <td class="book_name">{{ row.book_name }}</td>
+                <td class="publisher">{{ row.publisher }}</td>
+                <td class="author">{{ row.author }}</td>
+                <td class="publish_date">{{ row.publish_date }}</td>
+                <td class="link">{{ row.link }}</td>
+                <td class="book_rand">{{ row.book_rank }}</td>
+                <td class="book_class">{{ row.book_class }}</td>
+                <td class="location">{{ row.location }}</td>
+                <td class="book_amount">{{ row.book_amount }}</td>
+                <td class="operate">
+                    <a href="#" onclick="borrow(this)">借阅</a>
+                </td>
+            </tr>
+
+        {% endfor %}
+    {% endif %}
+    </tbody>
+    </table>
+</div>
+
+</div>
+
+<script>
+ //借阅
+    function borrow(obj){
+        row = $(obj).parent().parent(); // 操作的行
+        cols = $(row).children(); // 一行的各列
+        $.ajax({
+         url: "{% url 'borrow' %}",
+         type: "POST",
+         data: {
+             "book_id":$(cols[1]).text(),
+             "location":$(cols[10]).text(),
+         },
+         success: function (backData) {
+             if(backData.status==="0")//插入成功
+             alert("借阅成功!");
+             else if(backData.status==="1")// 插入失败
+             alert(backData.message);
+         }
+     })
+    }
+</script>
+
+{% endblock %}

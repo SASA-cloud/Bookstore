@@ -1,0 +1,161 @@
+{% extends "bookstore/base.html" %}
+
+
+{#管理应用导航条#}
+          {% block manageNav %}
+        <li><a href="{% url 'index' %}">图书信息页面</a></li>
+        <li ><a href="{% url 'inventory' %}">库存管理页面</a></li>
+        <li><a href="{% url 'subscribe' %}">采编管理页面</a></li>
+        <li  class="active"><a href="{% url 'purchase' %}">进货管理页面</a></li>
+        <li><a href="{% url 'finance' %}">财务管理页面</a></li>
+        <li  ><a href="{% url 'user' %}">用户管理页面</a></li>
+          {% endblock %}
+
+
+
+{###########################查询##############################}
+{% block searchInput %}
+        <div >
+<form id="searchBookForm" class="form-inline" method = "POST"  action="{% url 'purchase' %}">
+{% csrf_token %}
+  <select name = "status" id="status" class="form-control">
+  <option value="全部进货" >全部进货</option>
+  <option value="待提交" >待提交</option>
+  <option value="待付款">待付款</option>
+  <option value="处理中">处理中</option>
+  <option value="已取消">已取消</option>
+  <option value="已完成">已完成</option>
+  </select>
+  <button type="submit" class="btn btn-default" >查询</button>
+</form>
+        </div>
+{% endblock %}
+{###########################查询##############################}
+
+{###########################列表##############################}
+{% block tableInfo %}
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover">
+    <thead>
+    <th></th>
+    {% for name in subscribeDisplayList %}
+    <th>{{ name }}</th>
+    {% endfor %}
+    <th>操作</th>
+    </thead>
+    <tbody>
+    {% if queryList %}
+        {% for row in queryList %}
+            <tr>
+                <td> </td>
+                <td class="purchase_id">{{ row.purchase_id }}</td>
+                <td class="purchase_time">{{ row.purchase_time }}</td>
+                <td class="cost_label">{{ row.cost_label }}</td>
+                <td class="purchase_status">{{ row.purchase_status }}</td>
+                <td class="operator">{{ row.operator }}</td>
+                <td class="account_id">{{ row.account_id }}</td>
+
+                <td class="operate">
+                    {% if row.purchase_status == '待提交' %}
+                    <a href="#"  class="submit" onclick="submit_purchase(this)">提交</a>
+                    <a href="#" class="cancel" onclick="cancel_purchase(this)">取消</a>
+                    {% endif %}
+                    {% if row.purchase_status == '处理中' %}
+                    <a href="#" class="confirm" onclick="confirm_receipt(this)">确认收货</a>
+                    {% endif %}
+                </td>
+            </tr>
+
+        {% endfor %}
+    {% endif %}
+    </tbody>
+    </table>
+</div>
+{% endblock %}
+{###########################列表##############################}
+
+{############################控制操作#########################}
+{% block controlBtn %}
+
+{% endblock %}
+{############################控制操作#########################}
+
+
+{############################脚本#########################}
+{% block js %}
+    <script>
+    //提交进货
+    function submit_purchase(obj){
+        ret = prompt("提交说明","提交进货单")
+        if(ret){  //确定
+            row = $(obj).parent().parent(); // 操作的行
+            $.ajax({
+             url: "{% url 'submitPurchase' %}",
+             type: "POST",
+             data: {
+                 "purchase_id":$(row).children('.purchase_id').text(),
+                 "account_reason":ret,
+             },
+             success: function (backData) {
+                 if(backData.status==="0") {//减少成功
+                     alert("提交成功!");
+
+                 }
+                 else if(backData.status==="1")// 减少失败
+                 alert("提交失败!");
+
+             }
+         })
+        }
+    }
+  //取消进货
+    function cancel_purchase(obj){
+        ret = confirm("确定取消进货吗？");
+        if(ret){  //确定
+            row = $(obj).parent().parent(); // 操作的行
+            $.ajax({
+             url: "{% url 'cancelPurchase' %}",
+             type: "POST",
+             data: {
+                 "purchase_id":$(row).children('.purchase_id').text(),
+             },
+             success: function (backData) {
+                 if(backData.status==="0") {//减少成功
+                     alert("取消成功!");
+
+                 }
+                 else if(backData.status==="1")// 减少失败
+                 alert("取消失败!");
+             }
+         })
+        }
+    }
+
+  //确认收货
+    function confirm_receipt(obj){
+        ret = confirm("确认收货吗？");
+        if(ret){  //确定
+            row = $(obj).parent().parent(); // 操作的行
+            $.ajax({
+             url: "{% url 'confirmReceipt' %}",
+             type: "POST",
+             data: {
+                 "purchase_id":$(row).children('.purchase_id').text(),
+             },
+             success: function (backData) {
+                 if(backData.status==="0") {//减少成功
+                     alert("确认成功!");
+                     {#$(row).find(".cancel").hide()#}
+                     {#$(row).find(".submit").hide()#}
+                     {#$(row).find(".confirm").hide()#}
+                 }
+                 else if(backData.status==="1")// 减少失败
+                 alert("确认失败!");
+             }
+         })
+        }
+    }
+</script>
+{% endblock %}
+
+{############################脚本#########################}

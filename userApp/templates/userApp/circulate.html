@@ -1,0 +1,230 @@
+{% extends "userApp/base.html" %}
+
+{#导航条#}
+{% block nav %}
+<li ><a href="{% url 'selfInfo' %}">个人信息</a></li>
+<li class="active"><a href="{% url 'circulate' %}">我的流通</a></li>
+<li><a href="{% url 'readerSearch' %}">检索</a></li>
+{% endblock %}
+
+{% block mainbody %}
+<h1 class="page-header">流通信息</h1>
+{#标签页#}
+<div class="row">
+
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">在借阅</a></li>
+    <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">借阅历史</a></li>
+    <li role="presentation"><a href="#messages" aria-controls="messages" role="tab" data-toggle="tab">罚单</a></li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="home">
+        {% block borrow_on %}
+            <div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover">
+    <thead>
+    <th></th>
+
+    <th>外借编号</th>
+    <th>图书名称</th>
+    <th>作者</th>
+    <th>出版年份</th>
+    <th>借阅时间</th>
+    <th>预计归还时间</th>
+    <th>续借时间</th>
+    <th>操作</th>
+    </thead>
+    <tbody>
+    {% if queryOnBorrowList %}
+        {% for row in queryOnBorrowList %}
+            <tr>
+                <td> </td>
+                <td class="borrow_on_id">{{ row.borrow_on_id }}</td>
+                <td class="book_name">{{ row.book_name }}</td>
+                <td class="author">{{ row.author }}</td>
+                <td class="publish_date">{{ row.publish_date }}</td>
+                <td class="borrow_date">{{ row.borrow_date }}</td>
+                <td class="due_date">{{ row.due_date }}</td>
+                <td class="continue_date">{{ row.continue_date }}</td>
+                <td class="operate">
+                    <a href="#"  onclick="continue_borrow(this)">续借</a>
+                    <a href="#"  onclick="return_book(this)">还书</a>
+                </td>
+            </tr>
+
+        {% endfor %}
+    {% endif %}
+    </tbody>
+    </table>
+</div>
+        {% endblock %}
+    </div>
+    <div role="tabpanel" class="tab-pane" id="profile">
+        {% block my_borrow %}
+        <div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover">
+    <thead>
+    <th></th>
+    <th>图书名称</th>
+    <th>ISBN</th>
+    <th>作者</th>
+    <th>出版社</th>
+    <th>借阅日期</th>
+    <th>续借时间</th>
+    <th>归还日期</th>
+    <th>馆藏位置</th>
+    </thead>
+    <tbody>
+    {% if queryMyBorrowList %}
+        {% for row in queryMyBorrowList %}
+            <tr>
+                <td> </td>
+                <td class="book_name">{{ row.book_name }}</td>
+                <td class="author">{{ row.author }}</td>
+                <td class="ISBN">{{ row.ISBN }}</td>
+                <td class="publisher">{{ row.publisher }}</td>
+                <td class="borrow_date">{{ row.borrow_date }}</td>
+                <td class="continue_date">{{ row.continue_date }}</td>
+                <td class="return_date">{{ row.return_date }}</td>
+                <td class="location">{{ row.location }}</td>
+            </tr>
+
+        {% endfor %}
+    {% endif %}
+    </tbody>
+    </table>
+</div>
+        {% endblock %}
+    </div>
+    <div role="tabpanel" class="tab-pane" id="messages">
+        {% block fine %}
+{#    查询   #}
+        <div >
+<form id="searchBookForm" class="form-inline" method = "POST"  action="{% url 'circulate' %}">
+{% csrf_token %}
+  <select name = "bill_status" id="bill_status" class="form-control">
+  <option value="全部罚单" >全部罚单</option>
+  <option value="待付款" >待付款</option>
+  <option value="已支付">已支付</option>
+  </select>
+  <button type="submit" class="btn btn-default" >查询</button>
+</form>
+        </div>
+
+            <div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover">
+    <thead>
+    <th></th>
+    <th>罚单编号</th>
+    <th>图书名称</th>
+    <th>作者</th>
+    <th>出版时间</th>
+    <th>罚款</th>
+    <th>状态</th>
+    <th>操作</th>
+    </thead>
+    <tbody>
+    {% if queryFineList %}
+        {% for row in queryFineList %}
+            <tr>
+                <td> </td>
+                <td class="fine_id">{{ row.fine_id }}</td>
+                <td class="book_name">{{ row.book_name }}</td>
+                <td class="author">{{ row.author }}</td>
+                <td class="publish_date">{{ row.publish_date }}</td>
+                <td class="find_find">{{ row.fine_fine }}</td>
+                <td class="bill_status">{{ row.bill_status }}</td>
+                <td class="operate">
+                    {% if row.bill_status == '待付款' %}
+                    <a href="#"  onclick="pay_fine(this)">支付罚款</a>
+                    {% endif %}
+                </td>
+            </tr>
+
+        {% endfor %}
+    {% endif %}
+    </tbody>
+    </table>
+</div>
+
+        {% endblock %}
+    </div>
+  </div>
+
+</div>
+
+<script>
+//续借
+function continue_borrow(obj){
+        ret = confirm("确定续借吗？");
+        if(ret){  //确定
+            row = $(obj).parent().parent(); // 操作的行
+            cols = $(row).children(); // 一行的各列
+            $.ajax({
+             url: "{% url 'continueBorrow' %}",
+             type: "POST",
+             data: {
+                 "borrow_on_id":$(cols[1]).text(),
+             },
+             success: function (backData) {
+                 if(backData.status==="0")//插入成功
+                 alert("续借成功!");
+                 else if(backData.status==="1")// 插入失败
+                 alert("续借失败!");
+             }
+         })
+        }
+}
+
+//还书
+function return_book(obj){
+        ret = confirm("确定还书吗？");
+        if(ret){  //确定
+            row = $(obj).parent().parent(); // 操作的行
+            cols = $(row).children(); // 一行的各列
+            $.ajax({
+             url: "{% url 'returnBook' %}",
+             type: "POST",
+             data: {
+                 "borrow_on_id":$(cols[1]).text(),  // 外借编号
+             },
+             success: function (backData) {
+                 if(backData.status==="0")//插入成功
+                 alert(backData.message);
+                 else if(backData.status==="1")// 插入失败
+                 alert(backData.message);
+             }
+         })
+        }
+}
+
+
+//支付罚款
+function pay_fine(obj){
+        ret = confirm("确定支付吗？");
+        if(ret){  //确定
+            row = $(obj).parent().parent(); // 操作的行
+            cols = $(row).children(); // 一行的各列
+            $.ajax({
+             url: "{% url 'payFine' %}",
+             type: "POST",
+             data: {
+                 "fine_id":$(cols[1]).text(),  // 罚单编号
+             },
+             success: function (backData) {
+                 if(backData.status==="0")//插入成功
+                 alert("支付成功");
+                 else if(backData.status==="1")// 插入失败
+                 alert("支付失败");
+             }
+         })
+        }
+}
+
+
+</script>
+
+{% endblock %}

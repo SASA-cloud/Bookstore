@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>读者系统</title>
+    {% load bootstrap3 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    {% load static %}
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="{% static 'js/index.js' %}"></script>
+
+</head>
+<body>
+<div id="navbar">
+
+    <nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header" >
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">读者系统</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="{% url 'signin' %}">注册界面</a></li>
+      </ul>
+
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+</div>
+
+
+<div class = "container" >
+{###########注册结果##############}
+<div class="row" >
+    {% if message %}
+        <div class="alert ">{{ message }}</div>
+    {% endif %}
+
+</div>
+<div id = "login_window" class = "row">
+    <div class="col-md-4"></div>
+<form class="form-signin col-md-4" action="{% url 'signinSubmit' %}" method="post">
+    {% csrf_token %}
+        <h2 class="form-signin-heading">注册</h2>
+        <label for="inputID" class="sr-only">用户ID</label>
+        <input name="student_id" id="inputID" class="form-control" placeholder="用户ID(小于等于11个字符)" required autofocus>
+    <br>
+        <label  for="inputPassword" class="sr-only">密码</label>
+        <input name="student_secret" type="password" id="inputPassword" class="form-control" placeholder="密码(小于等于16个字符)" required>
+    <br>
+        <label for="inputName" class="sr-only">姓名</label>
+        <input name="student_name"  id="inputName" class="form-control" placeholder="姓名(小于等于20个字符)" required>
+     <br>
+        <div class="row">
+        <button class="btn btn-lg btn-primary btn-block" type="submit">注册</button>
+        </div>
+
+      </form>
+
+        <div class="col-md-4"></div>
+</div>
+
+
+</div>
+
+</body>
+{############################脚本#########################}
+<script>
+{#注册#}
+    function signin(){
+        loginForm = document.getElementById("loginForm");
+        var formData = new FormData(loginForm);
+         $.ajax({
+             url: "{% url 'signinSubmit' %}",
+             type: "POST",
+             data: formData,
+             processData: false,
+             contentType: false,
+             success: function (backData) {
+                 if(backData.status==="1")// 登录失败
+                    alert("注册失败");
+                 else if(backData.status==="0") // 登录成功
+                    alert("注册成功");
+             }
+         })
+    }
+
+</script>
+{############################脚本#########################}
+</html>

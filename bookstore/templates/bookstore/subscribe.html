@@ -1,0 +1,247 @@
+{% extends "bookstore/base.html" %}
+
+{#管理应用导航条#}
+          {% block manageNav %}
+        <li><a href="{% url 'index' %}">图书信息页面</a></li>
+        <li ><a href="{% url 'inventory' %}">库存管理页面</a></li>
+        <li class="active"><a href="{% url 'subscribe' %}">采编管理页面</a></li>
+        <li  ><a href="{% url 'purchase' %}">进货管理页面</a></li>
+        <li><a href="{% url 'finance' %}">财务管理页面</a></li>
+        <li  ><a href="{% url 'user' %}">用户管理页面</a></li>
+          {% endblock %}
+
+
+
+
+
+{###########################查询##############################}
+{% block searchInput %}
+{#    查询   #}
+        <div >
+<form id="searchBookForm" class="form-inline" method = "POST"  action="{% url 'subscribe' %}">
+{% csrf_token %}
+  <select name = "status" id="status" class="form-control">
+  <option value="全部采编" >全部采编</option>
+  <option value="未提交" >未提交</option>
+  <option value="已提交">已提交</option>
+  </select>
+  <button type="submit" class="btn btn-default" >查询</button>
+</form>
+        </div>
+{% endblock %}
+{###########################查询##############################}
+
+{###########################列表##############################}
+{% block tableInfo %}
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover">
+    <thead>
+    <th></th>
+    <th>采编编号</th>
+    <th>图书ID</th>
+    <th>图书名称</th>
+    <th>采编时间</th>
+    <th>供应商</th>
+    <th>数量</th>
+    <th>单价</th>
+    <th>总价</th>
+    <th>状态</th>
+    <th>进货单号</th>
+    <th>操作</th>
+    </thead>
+    <tbody>
+    {% if queryList %}
+        {% for row in queryList %}
+            <tr>
+                <td> </td>
+                <td class="subscribe_id">{{ row.subscribe_id }}</td>
+                <td class="book_id">{{ row.book_id }}</td>
+                <td class="book_name">{{ row.book_name }}</td>
+                <td class="subscribe_time">{{ row.subscribe_time }}</td>
+                <td class="supplier">{{ row.supplier }}</td>
+                <td class="amount">{{ row.amount }}</td>
+                <td class="unit_price">{{ row.unit_price }}</td>
+                <td class="total_price">{{ row.total_price }}</td>
+                <td class="subscribe_status">{{ row.subscribe_status }}</td>
+                <td class="purchase_id">{{ row.purchase_id }}</td>
+
+                <td class="operate">
+{#                    <a href="#"  data-toggle="modal" data-target="#modifyModal" onclick="modify_inventory(this)">修改</a>#}
+                    {% if row.subscribe_status == '未提交'%}
+                    <a href="#" onclick="delete_row(this)">删除</a>
+                    {% endif %}
+                </td>
+            </tr>
+
+        {% endfor %}
+    {% endif %}
+    </tbody>
+    </table>
+</div>
+
+{% endblock %}
+{###########################列表##############################}
+
+{############################控制操作#########################}
+{% block controlBtn %}
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#insertModal">
+  添加采编
+</button>
+
+<button type="button" class="btn btn-primary btn-lg" onclick="submit_subscribe()">
+  提交采编
+</button>
+{% endblock %}
+
+{########################添加采编模态框########################}
+{% block modal%}
+<div class="modal fade" id="insertModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">添加采编</h4>
+      </div>
+      <div class="modal-body">
+{#          输入组框#}
+    <form id="inputForm">
+    {% csrf_token %}
+{#          {% if subscribeTableList %}#}
+{#      {% for nm in subscribeTableList %}#}
+          <div class="input-group">
+          <span class="input-group-addon" id="basic-addon1">图书ID</span>
+          <input type="text" class="form-control" name="book_id" placeholder="..." aria-describedby="basic-addon1">
+          </div>
+         <div class="input-group">
+          <span class="input-group-addon" id="basic-addon1">供应商</span>
+          <input type="text" class="form-control" name="supplier" placeholder="..." aria-describedby="basic-addon1">
+          </div>
+         <div class="input-group">
+          <span class="input-group-addon" id="basic-addon1">数量</span>
+          <input type="text" class="form-control" name="amount" placeholder="..." aria-describedby="basic-addon1">
+          </div>
+{#      {% endfor %}#}
+{#  {% endif %}#}
+    </form>
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary" onclick="insert_row()">添加</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+{############################控制操作#########################}
+
+
+
+{##########修改采编信息模态框########################}
+{#<div class="modal fade" id="modifyModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">#}
+{#  <div class="modal-dialog" role="document">#}
+{#    <div class="modal-content">#}
+{#      <div class="modal-header">#}
+{#        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>#}
+{#        <h4 class="modal-title" id="myModalLabel">修改图书信息</h4>#}
+{#      </div>#}
+{#      <div class="modal-body">#}
+{#          输入组框#}
+{#    <form id="modifyForm">#}
+{#    {% csrf_token %}#}
+{#          {% if subscribeTableList %}#}
+{#      {% for nm in subscribeTableList %}#}
+{#          <div class="input-group">#}
+{#          <span class="input-group-addon" id="basic-addon1">{{ nm }}</span>#}
+{#          <input type="text" class="form-control" name="{{ nm }}" placeholder="..." aria-describedby="basic-addon1">#}
+{#          </div>#}
+{#      {% endfor %}#}
+{#  {% endif %}#}
+{#    </form>#}
+{##}
+{##}
+{#      </div>#}
+{#      <div class="modal-footer">#}
+{#        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>#}
+{#        <button type="button" class="btn btn-primary" onclick="submit_modify_book()" >Save changes</button>#}
+{#      </div>#}
+{#    </div>#}
+{#  </div>#}
+{#</div>#}
+
+
+
+
+
+
+
+
+{############################脚本#########################}
+{% block js %}
+    <script>
+    //添加采编
+    function insert_row(){
+        inputForm = document.getElementById("inputForm");
+        var formData = new FormData(inputForm);
+         $.ajax({
+             url: "{% url 'insertSubscribe' %}",
+             type: "POST",
+             data: formData,
+             processData: false,
+             contentType: false,
+             success: function (backData) {
+                 if(backData.status==="0")//插入成功
+                 alert("添加成功!");
+                 else if(backData.status==="1")// 插入失败
+                 alert("添加失败!");
+             }
+         })
+    }
+
+
+    //删除采编信息
+    function delete_row(obj){
+        ret = confirm("确定删除库存吗？");
+        if(ret){  //确定
+            row = $(obj).parent().parent(); // 操作的行
+            $.ajax({
+             url: "{% url 'deleteSubscribe' %}",
+             type: "POST",
+             data: {
+                 "subscribe_id":$(row).children('.subscribe_id').text(),
+             },
+             success: function (backData) {
+                 if(backData.status==="0")//减少成功
+                 alert("删除成功!");
+                 else if(backData.status==="1")// 减少失败
+                 alert("删除失败!");
+             }
+         })
+        }
+    }
+
+    //提交采编单
+    function submit_subscribe(){
+        ret = confirm("确定提交吗？");
+        if(ret){  //确定提交
+            $.ajax({
+             url: "{% url 'submitSubscribe' %}",
+             type: "POST",
+             success: function (backData) {
+                 if(backData.status==="0")//插入成功
+                 alert("提交成功!");
+                 else if(backData.status==="1")// 插入失败
+                 alert("提交失败!");
+             }
+         })
+        }
+    }
+
+
+</script>
+{% endblock %}
+{############################脚本#########################}
